@@ -34,7 +34,7 @@ pipeline {
 
         stage('Upload to Artifactory') {
             steps {
-              withJfrogEnv('Myartifactory'){
+              // withJfrogEnv('Myartifactory'){
                  sh "mvn clean deploy"  
             }
         }
