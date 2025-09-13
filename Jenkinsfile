@@ -36,7 +36,7 @@ pipeline {
             steps {
               // withJfrogEnv('Myartifactory'){
                  sh "mvn clean deploy"  
-            }
+            // }
         }
     }
   }
