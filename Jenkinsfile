@@ -1,21 +1,43 @@
-pipeline{
+
+pipeline {
     agent any
 
-    tools {
-         maven 'maven'
-         jdk 'java'
-    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'master', url: 'https://github.com/prashantmisala/java-hello-world-with-maven.git'
+            }
+        }
 
-    stages{
-        stage('checkout'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/sreenivas449/java-hello-world-with-maven.git']]])
+        stage('Build with Maven') {
+            steps {
+                sh "mvn validate"
+                sh "mvn compile"
             }
         }
-        stage('build'){
-            steps{
-               bat 'mvn package'
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh "mvn sonar:sonar"
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Upload to Artifactory') {
+            steps {
+              withJfrogEnv('jfrog'){
+                 sh "mvn clean deploy"  
             }
         }
     }
-}
+  }
+}    
